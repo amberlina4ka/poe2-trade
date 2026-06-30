@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PoE 2 Мобильный Трейд</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        body {
+            background-color: #121212;
+            color: #e0e0e0;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+    </style>
+</head>
+<body class="flex justify-center items-start min-h-screen p-4">
+
+    <div class="w-full max-w-sm bg-[#1e1e1e] rounded-2xl p-5 shadow-xl border border-[#2d2d2d] mt-4">
+        <h1 class="text-2xl font-bold text-blue-400 text-center mb-6">PoE 2 Мобильный Трейд</h1>
+
+        <div class="space-y-4 mb-6">
+            <h2 class="text-sm font-semibold text-gray-400">1. Актуальные курсы</h2>
+            
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">1 Divine = ... Chaos</label>
+                <input type="number" id="divChaos" value="15" step="any"
+                       class="w-full bg-[#2d2d2d] border border-[#3d3d3d] rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500">
+            </div>
+
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">1 Divine = ... Exalt</label>
+                <input type="number" id="divEx" value="140" step="any"
+                       class="w-full bg-[#2d2d2d] border border-[#3d3d3d] rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500">
+            </div>
+        </div>
+
+        <hr class="border-[#2d2d2d] my-4">
+
+        <div class="space-y-4 mb-6">
+            <h2 class="text-sm font-semibold text-gray-400">2. Цены на рынке</h2>
+
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">Твоя цена в Divine</label>
+                <input type="number" id="targetPrice" value="1.4" step="any"
+                       class="w-full bg-[#2d2d2d] border border-[#3d3d3d] rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500">
+            </div>
+
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">Цена на трейде в Chaos</label>
+                <input type="number" id="chaosTrade" value="20" step="any"
+                       class="w-full bg-[#2d2d2d] border border-[#3d3d3d] rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500">
+            </div>
+
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">Цена на трейде в Exalt</label>
+                <input type="number" id="exTrade" value="200" step="any"
+                       class="w-full bg-[#2d2d2d] border border-[#3d3d3d] rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500">
+            </div>
+        </div>
+
+        <button onclick="comparePrices()" 
+                class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-4 rounded-xl transition duration-200 shadow-lg active:scale-[0.98]">
+            Сравнить выгоду
+        </button>
+
+        <div class="mt-6 bg-[#252526] border border-[#333334] rounded-xl p-4">
+            <pre id="resultText" class="whitespace-pre-wrap text-sm text-gray-300 font-sans">Заполните поля и нажмите кнопку выше</pre>
+        </div>
+    </div>
+
+    <script>
+        function comparePrices() {
+            // Забираем значения из полей
+            const divToChaos = parseFloat(document.getElementById('divChaos').value);
+            const divToEx = parseFloat(document.getElementById('divEx').value);
+            const targetDiv = parseFloat(document.getElementById('targetPrice').value);
+            const tradeChaos = parseFloat(document.getElementById('chaosTrade').value);
+            const tradeEx = parseFloat(document.getElementById('exTrade').value);
+            const resultBox = document.getElementById('resultText');
+
+            // Проверка на корректность ввода
+            if (isNaN(divToChaos) || isNaN(divToEx) || isNaN(targetDiv) || isNaN(tradeChaos) || isNaN(tradeEx)) {
+                resultBox.innerHTML = "<span class='text-red-400 font-semibold'>Ошибка: Введите корректные числа!</span>";
+                return;
+            }
+
+            // Математика калькулятора
+            const chaosInDiv = tradeChaos / divToChaos;
+            const exInDiv = tradeEx / divToEx;
+
+            const diffChaos = chaosInDiv - targetDiv;
+            const diffEx = exInDiv - targetDiv;
+
+            // Форматирование знака выгоды (+/-)
+            const formatDiff = (num) => (num >= 0 ? '+' : '') + num.toFixed(3);
+
+            // Сборка отчета
+            let report = `🎯 Твоя базовая цель: ${targetDiv} Divine\n`;
+            report += "—".repeat(24) + "\n\n";
+
+            report += `💰 ЕСЛИ ВЫСТАВИТЬ ЗА ${tradeChaos.toFixed(0)} CHAOS:\n`;
+            report += `В переводе: ${chaosInDiv.toFixed(3)} Divine\n`;
+            report += `${diffChaos >= 0 ? '📈 Выгода' : '📉 Потеря'}: ${formatDiff(diffChaos)} Divine\n\n`;
+
+            report += `🪙 ЕСЛИ ВЫСТАВИТЬ ЗА ${tradeEx.toFixed(0)} EXALT:\n`;
+            report += `В переводе: ${exInDiv.toFixed(3)} Divine\n`;
+            report += `${diffEx >= 0 ? '📈 Выгода' : '📉 Потеря'}: ${formatDiff(diffEx)} Divine\n\n`;
+
+            report += "—".repeat(24) + "\n\n";
+
+            // Вынесение вердикта
+            if (chaosInDiv > exInDiv) {
+                const profitDiff = chaosInDiv - exInDiv;
+                report += `💡 <span class="text-green-400 font-semibold">ВЕРДИКТ: Выгоднее через CHAOS!</span>\n На ${profitDiff.toFixed(3)} div БОЛЬШЕ, чем в Exalts.`;
+            } else if (exInDiv > chaosInDiv) {
+                const profitDiff = exInDiv - chaosInDiv;
+                report += `💡 <span class="text-green-400 font-semibold">ВЕРДИКТ: Выгоднее через EXALT!</span>\n На ${profitDiff.toFixed(3)} div БОЛЬШЕ, чем в Chaos.`;
+            } else {
+                report += "💡 ВЕРДИКТ: Варианты одинаковы.";
+            }
+
+            // Выводим готовый текст на экран
+            resultBox.innerHTML = report;
+        }
+    </script>
+</body>
+</html>
