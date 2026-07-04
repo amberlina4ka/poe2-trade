@@ -42,17 +42,19 @@
                 <div>
                     <div class="flex items-center space-x-2 mb-4">
                         <span class="text-2xl">🛒</span>
-                        <h2 class="text-lg font-bold text-blue-400">Покупка Divane</h2>
-                    </div>                                  
+                        <h2 class="text-lg font-bold text-blue-400">Я хочу КУПИТЬ (Трачу Ex)</h2>
+                    </div>
+                    <p class="text-xs text-gray-400 mb-4">У тебя есть Экзальты. Нужно купить предмет ценой в Divine. Как выгоднее расплатиться?</p>
+                    
                     <div class="mb-4">
-                        <label class="block text-xs text-gray-400 mb-1">Количество Divine</label>
+                        <label class="block text-xs text-gray-400 mb-1">Цена желаемого предмета (в Divine)</label>
                         <input type="number" id="buyTargetPrice" value="1.0" step="any" class="w-full bg-[#2d2d2d] border border-[#3d3d3d] rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500">
                     </div>
                 </div>
 
                 <div>
                     <button onclick="calculateBuy()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 px-4 rounded-xl transition mb-4">Рассчитать покупку</button>
-                    <div class="bg-[#252526] border border-[#333334] rounded-xl p-3 min-h-[140px]">
+                    <div class="bg-[#252526] border border-[#333334] rounded-xl p-3 min-h-[160px]">
                         <pre id="buyResult" class="whitespace-pre-wrap text-xs text-gray-300 font-sans">Нажмите кнопку выше для расчета</pre>
                     </div>
                 </div>
@@ -61,20 +63,30 @@
             <div class="bg-[#1a1a1a] border border-[#2d2d2d] rounded-xl p-4 flex flex-col justify-between">
                 <div>
                     <div class="flex items-center space-x-2 mb-4">
-                        <span class="text-2xl">💰</span>
-                        <h2 class="text-lg font-bold text-green-400">Прожада дробных цен Divine</h2>
+                        <span class="text-2xl">⚖️</span>
+                        <h2 class="text-lg font-bold text-green-400">Я хочу ПРОДАТЬ (Выбор витрины)</h2>
                     </div>
-                    <p class="text-xs text-gray-400 mb-4">Вы продаете предмет. Твоя цель — получить чистые Divine. В чем выгоднее принять оплату от покупателя?</p>
+                    <p class="text-xs text-gray-400 mb-4">Сравниваем, в какой валюте выгоднее выставить вещь на рынок, чтобы получить максимум Дивайнов.</p>
                     
-                    <div class="mb-4">
-                        <label class="block text-xs text-gray-400 mb-1">Твоя цена за предмет (в Divine)</label>
-                        <input type="number" id="sellTargetPrice" value="1.5" step="any" class="w-full bg-[#2d2d2d] border border-[#3d3d3d] rounded-lg px-3 py-2 text-white focus:outline-none focus:border-green-500">
+                    <div class="space-y-3 mb-4">
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1">Базовая цель (сколько хочешь в Divine, например: 8.5)</label>
+                            <input type="number" id="sellTargetPrice" value="8.5" step="any" class="w-full bg-[#2d2d2d] border border-[#3d3d3d] rounded-lg px-3 py-2 text-white focus:outline-none focus:border-green-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1">Цена на трейде в CHAOS (например, за сколько берут в хаосах)</label>
+                            <input type="number" id="sellChaosPrice" value="20" step="any" class="w-full bg-[#2d2d2d] border border-[#3d3d3d] rounded-lg px-3 py-2 text-white focus:outline-none focus:border-green-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1">Цена на трейде в EXALT (например, за сколько берут в экзах)</label>
+                            <input type="number" id="sellExPrice" value="8000" step="any" class="w-full bg-[#2d2d2d] border border-[#3d3d3d] rounded-lg px-3 py-2 text-white focus:outline-none focus:border-green-500">
+                        </div>
                     </div>
                 </div>
 
                 <div>
-                    <button onclick="calculateSell()" class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-2.5 px-4 rounded-xl transition mb-4">Рассчитать продажу</button>
-                    <div class="bg-[#252526] border border-[#333334] rounded-xl p-3 min-h-[140px]">
+                    <button onclick="calculateSell()" class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-2.5 px-4 rounded-xl transition mb-4">Анализировать витрины</button>
+                    <div class="bg-[#252526] border border-[#333334] rounded-xl p-3 min-h-[160px]">
                         <pre id="sellResult" class="whitespace-pre-wrap text-xs text-gray-300 font-sans">Нажмите кнопку выше для расчета</pre>
                     </div>
                 </div>
@@ -84,7 +96,6 @@
     </div>
 
     <script>
-        // Функция получения общих курсов
         function getRates() {
             return {
                 divEx: parseFloat(document.getElementById('divEx').value),
@@ -93,7 +104,6 @@
             };
         }
 
-        // КОЛОНКА 1: ЛОГИКА ПОКУПКИ
         function calculateBuy() {
             const rates = getRates();
             const targetDiv = parseFloat(document.getElementById('buyTargetPrice').value);
@@ -104,57 +114,71 @@
                 return;
             }
 
-            // Вариант 1: Прямо в экзах
             const costDirectEx = targetDiv * rates.divEx;
-            // Вариант 2: Перевести экзы в хаосы, купить за хаосы
             const costViaChaos = targetDiv * rates.divChaos * rates.chaosEx;
 
             let report = `🎯 Цель: купить на сумму ${targetDiv} Div\n\n`;
-            report += `🔹 Способ А (Напрямую в Ex): ${costDirectEx.toFixed(2)} экзов\n`;
-            report += `🔹 Способ Б (Через Chaos): ${costViaChaos.toFixed(2)} экзов\n\n`;
+            report += `🔹 Прямой путь (в Ex): ${costDirectEx.toFixed(2)} экзов\n`;
+            report += `🔹 Обходной (Ex -> Chaos): ${costViaChaos.toFixed(2)} экзов\n\n`;
 
             if (costDirectEx < costViaChaos) {
-                const diff = costViaChaos - costDirectEx;
-                report += `💡 <span class="text-blue-400 font-semibold">ВЕРДИКТ: Плати НАПРЯМУЮ в Exalts!</span>\n Сэкономишь ${diff.toFixed(2)} экзов.`;
+                report += `💡 <span class="text-blue-400 font-semibold">ВЕРДИКТ: Плати НАПРЯМУЮ в Exalts!</span>\n Сэкономишь ${(costViaChaos - costDirectEx).toFixed(2)} экзов.`;
             } else if (costViaChaos < costDirectEx) {
-                const diff = costDirectEx - costViaChaos;
-                report += `💡 <span class="text-blue-400 font-semibold">ВЕРДИКТ: Переведи Ex в Chaos и плати хаосами!</span>\n Сэкономишь ${diff.toFixed(2)} экзов.`;
+                report += `💡 <span class="text-blue-400 font-semibold">ВЕРДИКТ: Переведи Ex в Chaos и плати хаосами!</span>\n Сэкономишь ${(costDirectEx - costViaChaos).toFixed(2)} экзов.`;
             } else {
                 report += `💡 ВЕРДИКТ: Способы равноценны.`;
             }
-
             resBox.innerHTML = report;
         }
 
-        // КОЛОНКА 2: ЛОГИКА ПРОДАЖИ
+        // НОВАЯ ЛОГИКА АНАЛИЗА ПРОДАЖИ
         function calculateSell() {
             const rates = getRates();
             const targetDiv = parseFloat(document.getElementById('sellTargetPrice').value);
+            const priceChaos = parseFloat(document.getElementById('sellChaosPrice').value);
+            const priceEx = parseFloat(document.getElementById('sellExPrice').value);
             const resBox = document.getElementById('sellResult');
 
-            if (Object.values(rates).some(isNaN) || isNaN(targetDiv)) {
+            if (Object.values(rates).some(isNaN) || isNaN(targetDiv) || isNaN(priceChaos) || isNaN(priceEx)) {
                 resBox.innerHTML = "<span class='text-red-400'>Ошибка ввода чисел!</span>";
                 return;
             }
 
-            // Сколько экзов получим, если нам заплатят "эквивалент в экзах" напрямую
-            const receiveDirectEx = targetDiv * rates.divEx;
+            // 1. Продажа за Хаосы -> перевод в Диваны
+            const divFromChaos = priceChaos / rates.divChaos;
+
+            // 2. Продажа за Экзы -> перевод напрямую в Диваны
+            const divFromExDirect = priceEx / rates.divEx;
+
+            // 3. Хитрый маршрут: Продажа за Экзы -> Меняем Экзы на Хаосы -> Хаосы в Диваны
+            const chaosFromEx = priceEx / rates.chaosEx;
+            const divFromExViaChaos = chaosFromEx / rates.divChaos;
+
+            let report = `🎯 Твоя базовая планка: ${targetDiv} Divine\n`;
+            report += "—".repeat(35) + "\n";
+            report += `🟢 Витрина CHAOS дает: ${divFromChaos.toFixed(3)} Divine\n`;
+            report += `🟢 Витрина EXALT (напрямую) дает: ${divFromExDirect.toFixed(3)} Divine\n`;
+            report += `🟢 Маршрут EXALT ➡️ CHAOS ➡️ DIV дает: ${divFromExViaChaos.toFixed(3)} Divine\n`;
+            report += "—".repeat(35) + "\n\n";
+
+            // Ищем самый прибыльный вариант из трех
+            const options = [
+                { name: "Выставить за CHAOS", value: divFromChaos, desc: "" },
+                { name: "Выставить за EXALT и менять напрямую в Divine", value: divFromExDirect, desc: "" },
+                { name: "Выставить за EXALT, поменять их на Хаосы, а хаосы сдать в Divine", value: divFromExViaChaos, desc: " (сложная схема)" }
+            ];
+
+            options.sort((a, b) => b.value - a.value); // Сортируем от большего к меньшему
+            const best = options[0];
+            const diffWithTarget = best.value - targetDiv;
+
+            report += `💡 <span class="text-green-400 font-semibold">ЛУЧШИЙ ВЫБОР: ${best.name}</span>\n`;
+            report += `Это принесет тебе **${best.value.toFixed(3)} Divine**.\n`;
             
-            // Сколько экзов мы получим суммарно, если нам заплатят хаосами, а мы их сдадим в экзы
-            const receiveViaChaos = (targetDiv * rates.divChaos) * rates.chaosEx;
-
-            let report = `🎯 Цель: получить ценность ${targetDiv} Div\n\n`;
-            report += `🔸 Если взять оплату в EX: получишь ${receiveDirectEx.toFixed(2)} экзов\n`;
-            report += `🔸 Если взять оплату в CHAOS (и перевести в Ex): получишь ${receiveViaChaos.toFixed(2)} экзов\n\n`;
-
-            if (receiveDirectEx > receiveViaChaos) {
-                const diff = receiveDirectEx - receiveViaChaos;
-                report += `💡 <span class="text-green-400 font-semibold">ВЕРДИКТ: Требуй оплату только в EXALTS!</span>\n Это выгоднее на ${diff.toFixed(2)} экзов.`;
-            } else if (receiveViaChaos > receiveDirectEx) {
-                const diff = receiveViaChaos - receiveDirectEx;
-                report += `💡 <span class="text-green-400 font-semibold">ВЕРДИКТ: Требуй оплату в CHAOS, а потом меняй на Ex!</span>\n Выиграешь +${diff.toFixed(2)} экзов чистыми.`;
+            if (diffWithTarget >= 0) {
+                report += `📈 Выигрыш к твоей базовой цели: +${diffWithTarget.toFixed(3)} Divine! Вы в наваре.`;
             } else {
-                report += `💡 ВЕРДИКТ: Без разницы, суммы равны.`;
+                report += `📉 Внимание: это всё равно меньше твоей цели на ${Math.abs(diffWithTarget).toFixed(3)} Divine.`;
             }
 
             resBox.innerHTML = report;
